@@ -1,0 +1,77 @@
+{
+  "name": "hr-warroom",
+  "version": "1.0.0",
+  "description": "HR 戰情室 · 工作紀錄與職能分析簿 - CMoney 人資部桌面應用",
+  "main": "main.js",
+  "author": {
+    "name": "CMoney HR Department"
+  },
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "tw.cmoney.hr.warroom",
+    "productName": "HR 戰情室",
+    "copyright": "Copyright © 2026 CMoney HR Department",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "index.html",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "HR戰情室-Setup-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "HR 戰情室",
+      "installerHeader": "build/installerHeader.bmp",
+      "installerHeaderIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "uninstallDisplayName": "HR 戰情室",
+      "deleteAppDataOnUninstall": false,
+      "language": "1028",
+      "installerLanguages": ["zh_TW"]
+    },
+    "portable": {
+      "artifactName": "HR戰情室-Portable-${version}.${ext}"
+    },
+    "mac": {
+      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }],
+      "icon": "build/icon.icns",
+      "category": "public.app-category.business",
+      "artifactName": "HR戰情室-${version}-${arch}.${ext}"
+    },
+    "linux": {
+      "target": ["AppImage"],
+      "icon": "build/icon.png",
+      "category": "Office",
+      "artifactName": "HR戰情室-${version}-${arch}.${ext}"
+    }
+  }
+}

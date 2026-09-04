@@ -1,0 +1,2296 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HR 戰情室 ｜ 工作紀錄與職能分析簿</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;900&family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root, [data-theme="obsidian"] {
+    --bg-0: #0a0a0f;
+    --bg-1: #12141c;
+    --bg-2: #1a1f2e;
+    --bg-3: #232a3d;
+    --line: #2c3548;
+    --line-soft: #1f2532;
+    --ink: #f5f1e8;
+    --ink-2: #c9c4b5;
+    --ink-3: #7a7466;
+    --gold: #c8a96a;
+    --gold-soft: #a08a52;
+    --crimson: #c8584a;
+    --jade: #6ba87e;
+    --azure: #6a8fc8;
+    --chart-grid: #1f2532;
+    --chart-tick: #7a7466;
+    --serif: "Noto Serif TC", "Source Han Serif TC", serif;
+    --sans: "Noto Sans TC", -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono: "JetBrains Mono", "Menlo", monospace;
+  }
+  /* ============ THEME: IVORY (Editorial Light) ============ */
+  [data-theme="ivory"] {
+    --bg-0: #f7f3ea;
+    --bg-1: #fffdf7;
+    --bg-2: #f0eadb;
+    --bg-3: #e6dec8;
+    --line: #d4c9aa;
+    --line-soft: #e8e1cb;
+    --ink: #1f1c14;
+    --ink-2: #4a4434;
+    --ink-3: #8a8268;
+    --gold: #9c7c2c;
+    --gold-soft: #b89544;
+    --crimson: #a8483c;
+    --jade: #5a8a64;
+    --azure: #4a6a9a;
+    --chart-grid: #e6dec8;
+    --chart-tick: #8a8268;
+  }
+  /* ============ THEME: SAGE (Warm Neutral) ============ */
+  [data-theme="sage"] {
+    --bg-0: #2a2f2a;
+    --bg-1: #343a34;
+    --bg-2: #3d443d;
+    --bg-3: #485148;
+    --line: #545d54;
+    --line-soft: #3f463f;
+    --ink: #ebe6d8;
+    --ink-2: #c4bfa8;
+    --ink-3: #8a8678;
+    --gold: #d4b577;
+    --gold-soft: #b59758;
+    --crimson: #c47a6e;
+    --jade: #8db58f;
+    --azure: #87a4c4;
+    --chart-grid: #3f463f;
+    --chart-tick: #8a8678;
+    --serif: "Noto Serif TC", "Source Han Serif TC", serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg-0);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 0%, rgba(200,169,106,0.05), transparent 60%),
+      radial-gradient(ellipse 50% 50% at 100% 100%, rgba(106,143,200,0.04), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .app { position: relative; z-index: 1; display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+  /* ============= SIDEBAR ============= */
+  .sidebar {
+    background: var(--bg-1);
+    border-right: 1px solid var(--line-soft);
+    padding: 28px 18px;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  }
+  .brand {
+    font-family: var(--serif);
+    font-weight: 900;
+    font-size: 20px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 18px;
+    margin-bottom: 24px;
+    line-height: 1.3;
+  }
+  .brand small {
+    display: block; font-family: var(--mono); font-size: 9px;
+    color: var(--ink-3); letter-spacing: 3px; margin-top: 6px; font-weight: 400;
+  }
+  .nav { display: flex; flex-direction: column; gap: 4px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 4px;
+    cursor: pointer; color: var(--ink-2);
+    font-size: 13.5px; transition: all .15s;
+    border: 1px solid transparent;
+  }
+  .nav-item:hover { background: var(--bg-2); color: var(--ink); }
+  .nav-item.active {
+    background: linear-gradient(90deg, rgba(200,169,106,0.12), transparent);
+    color: var(--gold);
+    border-left: 2px solid var(--gold);
+    padding-left: 10px;
+  }
+  .nav-item .idx {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--ink-3); width: 18px;
+  }
+  .nav-item.active .idx { color: var(--gold); }
+  /* ============= THEME SWITCHER ============= */
+  .theme-switcher {
+    position: absolute; bottom: 70px; left: 18px; right: 18px;
+    padding-top: 12px; border-top: 1px solid var(--line-soft);
+  }
+  .theme-switcher-label {
+    font-family: var(--mono); font-size: 9px; color: var(--ink-3);
+    letter-spacing: 2px; margin-bottom: 10px;
+  }
+  .theme-options { display: flex; gap: 8px; }
+  .theme-btn {
+    flex: 1; cursor: pointer; padding: 8px 4px;
+    border: 1px solid var(--line); border-radius: 3px;
+    background: var(--bg-2); transition: all .15s;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    font-family: var(--mono); font-size: 9px; color: var(--ink-3);
+    letter-spacing: 1px;
+  }
+  .theme-btn:hover { border-color: var(--gold); color: var(--ink-2); }
+  .theme-btn.active {
+    border-color: var(--gold); color: var(--gold);
+    background: linear-gradient(180deg, transparent, rgba(200,169,106,0.08));
+  }
+  .theme-swatch {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.15);
+    box-shadow: inset 0 0 0 2px var(--bg-1);
+  }
+  .theme-swatch.obsidian { background: linear-gradient(135deg, #0a0a0f 50%, #c8a96a 50%); }
+  .theme-swatch.ivory    { background: linear-gradient(135deg, #fffdf7 50%, #9c7c2c 50%); }
+  .theme-swatch.sage     { background: linear-gradient(135deg, #343a34 50%, #d4b577 50%); }
+  .footer-info {
+    position: absolute; bottom: 20px; left: 18px; right: 18px;
+    font-family: var(--mono); font-size: 10px; color: var(--ink-3);
+    padding-top: 12px; border-top: 1px solid var(--line-soft);
+  }
+  .footer-info span { color: var(--gold-soft); }
+
+  /* ============= MAIN ============= */
+  .main { padding: 36px 48px; max-width: 1400px; }
+  .page-head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 28px; padding-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .page-title {
+    font-family: var(--serif); font-weight: 600;
+    font-size: 28px; letter-spacing: 1px;
+  }
+  .page-subtitle {
+    font-size: 12px; color: var(--ink-3);
+    font-family: var(--mono); margin-top: 6px; letter-spacing: 2px;
+  }
+  .page-actions { display: flex; gap: 10px; }
+  .btn {
+    background: transparent; color: var(--ink-2);
+    border: 1px solid var(--line);
+    padding: 8px 16px; font-size: 12px; cursor: pointer;
+    font-family: var(--sans); letter-spacing: 1px;
+    transition: all .15s; border-radius: 2px;
+  }
+  .btn:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-primary {
+    background: var(--gold); color: var(--bg-0);
+    border-color: var(--gold); font-weight: 500;
+  }
+  .btn-primary:hover { background: var(--gold-soft); border-color: var(--gold-soft); color: var(--bg-0); }
+  .btn-danger { color: var(--crimson); border-color: rgba(200,88,74,.3); }
+  .btn-danger:hover { background: rgba(200,88,74,.1); border-color: var(--crimson); color: var(--crimson); }
+
+  .page { display: none; }
+  .page.active { display: block; animation: fadeIn .25s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px);} to { opacity: 1; transform: none;} }
+
+  /* ============= CARDS / GRIDS ============= */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px; margin-bottom: 28px;
+  }
+  .kpi {
+    background: var(--bg-1);
+    border: 1px solid var(--line-soft);
+    padding: 18px 20px;
+    border-radius: 4px;
+    position: relative; overflow: hidden;
+  }
+  .kpi::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+  .kpi-label {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--ink-3); letter-spacing: 2px; margin-bottom: 8px;
+  }
+  .kpi-value {
+    font-family: var(--serif); font-weight: 600;
+    font-size: 32px; color: var(--gold);
+    line-height: 1;
+  }
+  .kpi-value .unit { font-size: 13px; color: var(--ink-3); margin-left: 4px; font-family: var(--sans); }
+  .kpi-delta {
+    font-size: 11px; color: var(--ink-3); margin-top: 6px;
+    font-family: var(--mono);
+  }
+  .kpi-delta.up { color: var(--jade); }
+  .kpi-delta.down { color: var(--crimson); }
+
+  .chart-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 18px; margin-bottom: 24px;
+  }
+  .card {
+    background: var(--bg-1); border: 1px solid var(--line-soft);
+    padding: 20px 22px; border-radius: 4px;
+  }
+  .card-title {
+    font-family: var(--serif); font-size: 16px;
+    font-weight: 600; margin-bottom: 16px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-title small {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--ink-3); letter-spacing: 1.5px; font-weight: 400;
+  }
+  .chart-wrap { position: relative; height: 280px; }
+  .chart-wrap-tall { position: relative; height: 360px; }
+
+  /* ============= FORMS ============= */
+  .form-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 14px 20px; margin-bottom: 24px;
+  }
+  .form-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field.span-2 { grid-column: span 2; }
+  .field.span-3 { grid-column: span 3; }
+  .field label {
+    font-size: 11px; color: var(--ink-3);
+    font-family: var(--mono); letter-spacing: 1.5px;
+  }
+  .field input, .field select, .field textarea {
+    background: var(--bg-2); border: 1px solid var(--line);
+    color: var(--ink); padding: 9px 12px;
+    font-family: var(--sans); font-size: 13px;
+    border-radius: 2px; outline: none;
+    transition: border-color .15s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--gold);
+  }
+  .field textarea { resize: vertical; min-height: 70px; font-family: var(--sans); }
+  .section-title {
+    font-family: var(--serif); font-size: 18px; font-weight: 600;
+    color: var(--gold); margin: 28px 0 14px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-title small {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--ink-3); letter-spacing: 2px; font-weight: 400;
+  }
+
+  /* ============= TABLES ============= */
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--line-soft); }
+  th {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--ink-3); letter-spacing: 1.5px;
+    font-weight: 500; text-transform: uppercase;
+    background: var(--bg-2);
+  }
+  tr:hover td { background: rgba(200,169,106,0.03); }
+  td.num, th.num { text-align: right; font-family: var(--mono); }
+  td.pct { font-family: var(--mono); }
+  .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 2px;
+    font-size: 10.5px; font-family: var(--mono);
+    background: var(--bg-3); color: var(--ink-2);
+  }
+  .row-delete {
+    color: var(--crimson); cursor: pointer; font-family: var(--mono);
+    font-size: 11px; opacity: .6;
+  }
+  .row-delete:hover { opacity: 1; }
+
+  /* ============= ROUTINE TASKS (responsibilities setting) ============= */
+  .routine-list { display: flex; flex-direction: column; gap: 8px; }
+  .routine-row {
+    display: grid; grid-template-columns: 36px 1fr 100px 110px 40px;
+    gap: 10px; align-items: center;
+    background: var(--bg-2); padding: 8px 12px; border-radius: 2px;
+    border: 1px solid var(--line-soft);
+  }
+  .routine-row input { background: var(--bg-1); border: 1px solid var(--line); color: var(--ink); padding: 6px 9px; font-size: 12.5px; border-radius: 2px; }
+  .routine-row .idx { font-family: var(--mono); color: var(--ink-3); font-size: 11px; text-align: center; }
+
+  /* ============= ENTRY ROW ============= */
+  .entry-form {
+    background: var(--bg-1); padding: 18px 22px;
+    border: 1px solid var(--line-soft); border-left: 3px solid var(--gold);
+    margin-bottom: 24px; border-radius: 2px;
+  }
+  .entry-row {
+    display: grid;
+    grid-template-columns: 130px 200px 80px 1fr 1fr 80px;
+    gap: 10px; align-items: end;
+  }
+  /* progress bars */
+  .pbar {
+    background: var(--bg-3); height: 6px; border-radius: 3px; overflow: hidden;
+    position: relative; width: 100%; max-width: 220px;
+  }
+  .pbar > span {
+    display: block; height: 100%;
+    background: linear-gradient(90deg, var(--gold-soft), var(--gold));
+  }
+  .pbar.dual {
+    height: 14px;
+    background: transparent;
+    border: 1px solid var(--line);
+    position: relative;
+  }
+  .pbar.dual .planned {
+    position: absolute; left: 0; top: 0; height: 100%;
+    background: rgba(106,143,200,0.18); border-right: 1px dashed var(--azure);
+  }
+  .pbar.dual .actual {
+    position: absolute; left: 0; top: 0; height: 100%;
+    background: var(--gold); opacity: .85;
+  }
+  .pbar.dual.over .actual { background: var(--crimson); }
+  .pbar.dual.under .actual { background: var(--jade); }
+
+  .legend { display: flex; gap: 16px; font-size: 11px; color: var(--ink-3); font-family: var(--mono); margin-top: 10px;}
+  .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 6px; vertical-align: middle; border-radius: 2px;}
+  .legend .l-planned::before { background: rgba(106,143,200,0.4); border: 1px dashed var(--azure);}
+  .legend .l-actual::before { background: var(--gold);}
+  .legend .l-over::before { background: var(--crimson);}
+  .legend .l-under::before { background: var(--jade);}
+
+  /* Eisenhower matrix */
+  .matrix {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    margin-top: 8px;
+  }
+  .quad {
+    background: var(--bg-1); border: 1px solid var(--line-soft);
+    padding: 14px 16px; border-radius: 4px; min-height: 180px;
+  }
+  .quad h4 {
+    font-family: var(--serif); font-size: 14px; font-weight: 600;
+    margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .quad h4 small { font-family: var(--mono); font-size: 9.5px; color: var(--ink-3); letter-spacing: 1.5px; font-weight: 400;}
+  .quad.q1 { border-top: 3px solid var(--crimson); }
+  .quad.q2 { border-top: 3px solid var(--gold); }
+  .quad.q3 { border-top: 3px solid var(--azure); }
+  .quad.q4 { border-top: 3px solid var(--ink-3); }
+  .quad textarea {
+    background: transparent; border: none; color: var(--ink);
+    width: 100%; min-height: 130px; resize: vertical;
+    font-family: var(--sans); font-size: 12.5px;
+    outline: none;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--bg-3); border: 1px solid var(--gold);
+    color: var(--ink); padding: 12px 20px;
+    border-radius: 2px; font-size: 12.5px;
+    z-index: 1000; opacity: 0; pointer-events: none;
+    transition: opacity .25s, transform .25s;
+    transform: translateY(8px);
+  }
+  .toast.show { opacity: 1; transform: none; }
+
+  /* Filter bar */
+  .filter-bar {
+    display: flex; gap: 12px; align-items: end; flex-wrap: wrap;
+    background: var(--bg-1); padding: 14px 18px; border-radius: 4px;
+    border: 1px solid var(--line-soft); margin-bottom: 18px;
+  }
+  .filter-bar .field { flex: 1; min-width: 140px; max-width: 200px; }
+  .filter-bar input, .filter-bar select { width: 100%; }
+
+  /* Tabs within page */
+  .subtabs { display: flex; gap: 4px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
+  .subtab {
+    padding: 9px 18px; cursor: pointer; color: var(--ink-3);
+    font-size: 12.5px; border-bottom: 2px solid transparent;
+    margin-bottom: -1px; transition: all .15s;
+    font-family: var(--mono); letter-spacing: 1px;
+  }
+  .subtab.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .subtab:hover { color: var(--ink); }
+  .subpage { display: none; }
+  .subpage.active { display: block; }
+
+  /* AI candidate hint */
+  .ai-hint {
+    background: rgba(200,169,106,.06); border-left: 3px solid var(--gold);
+    padding: 14px 18px; margin: 18px 0; font-size: 12.5px; color: var(--ink-2);
+  }
+  .ai-hint strong { color: var(--gold); font-weight: 600;}
+
+  /* ============= MODAL ============= */
+  .modal-mask {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.65); backdrop-filter: blur(4px);
+    z-index: 999; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .modal-mask.show { display: flex; animation: fadeIn .2s; }
+  .modal {
+    background: var(--bg-1); border: 1px solid var(--line);
+    border-radius: 4px; max-width: 960px; width: 100%;
+    max-height: 86vh; display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .modal-head {
+    padding: 18px 24px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(90deg, rgba(200,169,106,0.08), transparent);
+  }
+  .modal-head h3 {
+    font-family: var(--serif); font-size: 18px; font-weight: 600;
+    color: var(--gold); letter-spacing: 1px;
+  }
+  .modal-head h3 small {
+    font-family: var(--mono); font-size: 10px; color: var(--ink-3);
+    letter-spacing: 1.5px; font-weight: 400; margin-left: 12px;
+  }
+  .modal-close {
+    cursor: pointer; color: var(--ink-3); font-size: 22px;
+    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+    border-radius: 2px;
+  }
+  .modal-close:hover { color: var(--crimson); background: var(--bg-2); }
+  .modal-body { padding: 22px 24px; overflow-y: auto; flex: 1; }
+  .modal-foot {
+    padding: 14px 24px; border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--bg-2);
+  }
+  .csv-mapping {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px; margin-bottom: 18px;
+  }
+  .csv-summary {
+    background: var(--bg-2); border-left: 3px solid var(--gold);
+    padding: 12px 16px; margin-bottom: 16px; font-size: 12.5px;
+  }
+  .csv-summary strong { color: var(--gold); font-weight: 600; }
+  .csv-preview {
+    max-height: 320px; overflow-y: auto;
+    border: 1px solid var(--line-soft); border-radius: 2px;
+  }
+  .csv-preview table { font-size: 11.5px; }
+  .csv-preview th {
+    position: sticky; top: 0; z-index: 1;
+  }
+  .csv-warn { color: var(--crimson); font-family: var(--mono); font-size: 11px; }
+  .csv-ok { color: var(--jade); font-family: var(--mono); font-size: 11px; }
+  .csv-row-skip { opacity: 0.4; text-decoration: line-through; }
+
+  /* Print-only styles */
+  @media print {
+    .sidebar, .page-actions, .subtabs, .filter-bar, .entry-form { display: none !important; }
+    body, .main { background: white; color: black; padding: 20px; }
+    .app { display: block; }
+    .card, .kpi { background: white; border: 1px solid #ccc; color: black; }
+    .kpi-value, .card-title, .section-title, .page-title { color: black; }
+    .page { display: block !important; }
+    .page:not(.print-target) { display: none !important; }
+    table th { background: #f4f4f4; color: #333; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      HR 戰情室
+      <small>WORK&nbsp;·&nbsp;LOG&nbsp;·&nbsp;LAB</small>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active" data-page="dashboard"><span class="idx">01</span>戰情儀表</div>
+      <div class="nav-item" data-page="daily"><span class="idx">02</span>每日工作記錄</div>
+      <div class="nav-item" data-page="nextweek"><span class="idx">03</span>下週工作計劃</div>
+      <div class="nav-item" data-page="synthesis"><span class="idx">04</span>彙總分析</div>
+      <div class="nav-item" data-page="export"><span class="idx">05</span>報告匯出</div>
+      <div class="nav-item" data-page="settings"><span class="idx">06</span>職務設定</div>
+    </nav>
+    <div class="theme-switcher">
+      <div class="theme-switcher-label">THEME&nbsp;/&nbsp;主題</div>
+      <div class="theme-options">
+        <div class="theme-btn active" data-theme="obsidian" onclick="setTheme('obsidian')">
+          <div class="theme-swatch obsidian"></div>
+          <span>墨夜</span>
+        </div>
+        <div class="theme-btn" data-theme="ivory" onclick="setTheme('ivory')">
+          <div class="theme-swatch ivory"></div>
+          <span>象牙</span>
+        </div>
+        <div class="theme-btn" data-theme="sage" onclick="setTheme('sage')">
+          <div class="theme-swatch sage"></div>
+          <span>霧綠</span>
+        </div>
+      </div>
+    </div>
+    <div class="footer-info">
+      <div>VER <span>1.1</span> · LOCAL STORAGE</div>
+      <div id="todayInfo" style="margin-top:6px;"></div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+
+    <!-- ============ PAGE: DASHBOARD ============ -->
+    <section class="page active" id="page-dashboard">
+      <div class="page-head">
+        <div>
+          <div class="page-title">戰情儀表</div>
+          <div class="page-subtitle">REAL-TIME&nbsp;·&nbsp;TODAY&nbsp;/&nbsp;THIS&nbsp;WEEK&nbsp;/&nbsp;LAST&nbsp;WEEK</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn" onclick="refreshAll()">重新計算</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="kpi-label">當日工時</div>
+          <div class="kpi-value" id="kpiToday">0<span class="unit">h</span></div>
+          <div class="kpi-delta" id="kpiTodayItems">—</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">當週工時</div>
+          <div class="kpi-value" id="kpiWeek">0<span class="unit">h</span></div>
+          <div class="kpi-delta" id="kpiWeekDelta">—</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">上週工時</div>
+          <div class="kpi-value" id="kpiLastWeek">0<span class="unit">h</span></div>
+          <div class="kpi-delta" id="kpiLastWeekItems">—</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">累計總工時</div>
+          <div class="kpi-value" id="kpiTotal">0<span class="unit">h</span></div>
+          <div class="kpi-delta" id="kpiAvg">—</div>
+        </div>
+      </div>
+
+      <div class="chart-grid">
+        <div class="card">
+          <div class="card-title">當日工作佔比 <small>TODAY · CATEGORY MIX</small></div>
+          <div class="chart-wrap"><canvas id="chartToday"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">當週工作佔比 <small>THIS WEEK · CATEGORY MIX</small></div>
+          <div class="chart-wrap"><canvas id="chartWeek"></canvas></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-title">當週 vs. 上週 · 分類工時對照 <small>THIS WEEK / LAST WEEK</small></div>
+        <div class="chart-wrap-tall"><canvas id="chartCompare"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">規劃佔比 vs. 實際佔比（累計）<small>PLAN&nbsp;/&nbsp;ACTUAL DEVIATION</small></div>
+        <table id="tablePlanActual">
+          <thead>
+            <tr>
+              <th style="width:30px;">#</th>
+              <th>工作類別</th>
+              <th class="num" style="width:80px;">規劃 %</th>
+              <th class="num" style="width:80px;">實際 %</th>
+              <th class="num" style="width:80px;">累計 h</th>
+              <th style="width:260px;">偏差視覺</th>
+              <th style="width:90px;">偏差判定</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="legend">
+          <span class="l-planned">規劃佔比</span>
+          <span class="l-actual">實際佔比（合理區間 ±3%）</span>
+          <span class="l-over">過度投入</span>
+          <span class="l-under">投入不足</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PAGE: DAILY ============ -->
+    <section class="page" id="page-daily">
+      <div class="page-head">
+        <div>
+          <div class="page-title">每日工作記錄</div>
+          <div class="page-subtitle">DAILY&nbsp;LOG&nbsp;·&nbsp;CAPTURE&nbsp;WHAT&nbsp;ACTUALLY&nbsp;HAPPENED</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn" onclick="copyYesterday()">複製昨日項目</button>
+        </div>
+      </div>
+
+      <div class="entry-form">
+        <div class="entry-row">
+          <div class="field">
+            <label>日期</label>
+            <input type="date" id="ipDate" />
+          </div>
+          <div class="field">
+            <label>工作分類</label>
+            <select id="ipCat"></select>
+          </div>
+          <div class="field">
+            <label>工時 (h)</label>
+            <input type="number" id="ipHours" step="0.5" min="0" placeholder="1.0" />
+          </div>
+          <div class="field">
+            <label>工作項目</label>
+            <input type="text" id="ipItem" placeholder="如：執行長室會議前置" />
+          </div>
+          <div class="field">
+            <label>執行進度與細節（選填）</label>
+            <input type="text" id="ipDetail" placeholder="如：簡報定稿 / 待 CHRO 簽核" />
+          </div>
+          <div class="field">
+            <label>&nbsp;</label>
+            <button class="btn btn-primary" onclick="addEntry()">新增</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="field">
+          <label>日期篩選</label>
+          <input type="date" id="filterDate" onchange="renderEntries()" />
+        </div>
+        <div class="field">
+          <label>分類篩選</label>
+          <select id="filterCat" onchange="renderEntries()"><option value="">全部</option></select>
+        </div>
+        <div class="field">
+          <label>關鍵字</label>
+          <input type="text" id="filterKw" placeholder="工作項目或細節" oninput="renderEntries()" />
+        </div>
+        <div style="margin-left:auto;display:flex;gap:8px;">
+          <button class="btn" onclick="clearFilters()">清除篩選</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">工作記錄清單 <small id="entryCount">0 筆</small></div>
+        <table id="tableEntries">
+          <thead>
+            <tr>
+              <th style="width:100px;">日期</th>
+              <th style="width:160px;">工作分類</th>
+              <th class="num" style="width:70px;">工時</th>
+              <th>工作項目</th>
+              <th>執行進度與細節</th>
+              <th style="width:50px;"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ PAGE: NEXT WEEK ============ -->
+    <section class="page" id="page-nextweek">
+      <div class="page-head">
+        <div>
+          <div class="page-title">下週工作計劃</div>
+          <div class="page-subtitle">NEXT&nbsp;WEEK&nbsp;·&nbsp;PLANNING&nbsp;BY&nbsp;ALLOCATION&nbsp;+&nbsp;EISENHOWER</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn" onclick="savePlan()">儲存計劃</button>
+        </div>
+      </div>
+
+      <div class="form-grid cols-3">
+        <div class="field">
+          <label>下週起始日</label>
+          <input type="date" id="planStart" />
+        </div>
+        <div class="field">
+          <label>預計可投入工時 (h)</label>
+          <input type="number" id="planHours" step="1" min="0" value="40" />
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button class="btn btn-primary" onclick="recalcPlan()">依規劃佔比自動分配</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:18px;">
+        <div class="card-title">依規劃佔比建議分配 <small>AUTO ALLOCATION</small></div>
+        <table id="tablePlanAlloc">
+          <thead>
+            <tr>
+              <th style="width:30px;">#</th>
+              <th>工作類別</th>
+              <th class="num">規劃 %</th>
+              <th class="num">建議時數</th>
+              <th class="num">本週實際</th>
+              <th>偏差提示</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="section-title">艾森豪矩陣 ｜ 重點任務排程 <small>EISENHOWER MATRIX</small></div>
+      <div class="matrix">
+        <div class="quad q1">
+          <h4>重要 / 緊急 <small>DO FIRST</small></h4>
+          <textarea id="planQ1" placeholder="如：CHRO 月度簡報、勞資爭議處理"></textarea>
+        </div>
+        <div class="quad q2">
+          <h4>重要 / 不緊急 <small>SCHEDULE</small></h4>
+          <textarea id="planQ2" placeholder="如：HR AI 化盤點、人才密度提升專案"></textarea>
+        </div>
+        <div class="quad q3">
+          <h4>不重要 / 緊急 <small>DELEGATE</small></h4>
+          <textarea id="planQ3" placeholder="如：例行公告、行政請款"></textarea>
+        </div>
+        <div class="quad q4">
+          <h4>不重要 / 不緊急 <small>ELIMINATE</small></h4>
+          <textarea id="planQ4" placeholder="可考慮刪減或自動化的事項"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PAGE: SYNTHESIS ============ -->
+    <section class="page" id="page-synthesis">
+      <div class="page-head">
+        <div>
+          <div class="page-title">彙總分析</div>
+          <div class="page-subtitle">SYNTHESIS&nbsp;·&nbsp;AGGREGATE&nbsp;BY&nbsp;CATEGORY&nbsp;&amp;&nbsp;IDENTIFY&nbsp;AI&nbsp;CANDIDATES</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn" onclick="exportCSV()">匯出 CSV</button>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="field">
+          <label>起始日期</label>
+          <input type="date" id="synStart" onchange="renderSynthesis()" />
+        </div>
+        <div class="field">
+          <label>結束日期</label>
+          <input type="date" id="synEnd" onchange="renderSynthesis()" />
+        </div>
+        <div style="margin-left:auto;display:flex;gap:8px;">
+          <button class="btn" onclick="setSynRange('thisMonth')">本月</button>
+          <button class="btn" onclick="setSynRange('lastMonth')">上月</button>
+          <button class="btn" onclick="setSynRange('quarter')">本季</button>
+          <button class="btn" onclick="setSynRange('all')">全期</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="kpi-label">期間總工時</div>
+          <div class="kpi-value" id="synTotal">0<span class="unit">h</span></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">工作天數</div>
+          <div class="kpi-value" id="synDays">0<span class="unit">天</span></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">日均工時</div>
+          <div class="kpi-value" id="synAvg">0<span class="unit">h</span></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">分類項數</div>
+          <div class="kpi-value" id="synCats">0<span class="unit">類</span></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:18px;">
+        <div class="card-title">期間分類統計 <small>CATEGORY BREAKDOWN</small></div>
+        <table id="tableSynCat">
+          <thead>
+            <tr>
+              <th style="width:30px;">#</th>
+              <th>工作類別</th>
+              <th class="num">累計時數</th>
+              <th class="num">佔比</th>
+              <th>分布</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          高頻工作項目辨識 <small>AI&nbsp;/&nbsp;AUTOMATION CANDIDATES · 出現 ≥ 3 次</small>
+        </div>
+        <div class="ai-hint">
+          <strong>HR AI 化盤點建議：</strong>下表所列項目出現頻率 ≥ 3 次，符合「高頻、重複、依賴人工判讀」特徵，
+          建議作為流程產品化、自動化或 AI 化的優先候選；可進一步盤點資料來源、耗時結構與決策邏輯，導入 SOP / 表單 / 工作流 / 模型。
+        </div>
+        <table id="tableAICandidates">
+          <thead>
+            <tr>
+              <th style="width:30px;">#</th>
+              <th>工作項目（含模糊匹配）</th>
+              <th>主要分類</th>
+              <th class="num">出現次數</th>
+              <th class="num">累計時數</th>
+              <th class="num">平均時數</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ PAGE: EXPORT ============ -->
+    <section class="page" id="page-export">
+      <div class="page-head">
+        <div>
+          <div class="page-title">報告匯出</div>
+          <div class="page-subtitle">EXPORT&nbsp;·&nbsp;WORK SUMMARY&nbsp;/&nbsp;JOB DESCRIPTION</div>
+        </div>
+      </div>
+
+      <div class="chart-grid">
+        <div class="card">
+          <div class="card-title">工作摘要報告 <small>WORK SUMMARY REPORT</small></div>
+          <p style="color:var(--ink-2);font-size:12.5px;margin-bottom:14px;line-height:1.7;">
+            包含期間總工時、分類統計、工作明細、規劃 vs 實際對照，並附下週計劃。輸出為可列印 HTML（A4 友善）。
+          </p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="exportSummary('week')">本週摘要</button>
+            <button class="btn btn-primary" onclick="exportSummary('lastWeek')">上週摘要</button>
+            <button class="btn btn-primary" onclick="exportSummary('month')">本月摘要</button>
+            <button class="btn" onclick="exportSummary('custom')">自訂期間</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">職能說明書 <small>JOB DESCRIPTION</small></div>
+          <p style="color:var(--ink-2);font-size:12.5px;margin-bottom:14px;line-height:1.7;">
+            依「職務設定」與「累計工作數據」自動生成標準格式 JD，包含工作摘要、主要職責任務佔比、所需條件與經歷。
+          </p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="exportJD()">產出職能說明書</button>
+            <button class="btn" onclick="exportJDPrint()">列印版本</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">資料匯入 <small>CSV / JSON IMPORT</small></div>
+        <p style="color:var(--ink-2);font-size:12.5px;margin-bottom:14px;line-height:1.7;">
+          匯入既有 CSV 工作紀錄。系統自動辨識欄位（日期、分類、工時、工作項目、執行進度），並提供預覽與分類比對；確認後才會寫入。
+        </p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="document.getElementById('importCSV').click()">匯入 CSV</button>
+          <input type="file" id="importCSV" accept=".csv,.txt" style="display:none" onchange="onCSVSelected(event)" />
+          <button class="btn" onclick="downloadCSVTemplate()">下載 CSV 範本</button>
+          <button class="btn" onclick="document.getElementById('importFile').click()">還原 JSON 備份</button>
+          <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)" />
+        </div>
+        <p style="color:var(--ink-3);font-size:11.5px;margin-top:14px;font-family:var(--mono);line-height:1.6;">
+          支援欄位（不分順序、不分大小寫）：日期 / Date · 工作分類 / Category · 工時 / Hours · 工作項目 / Item · 執行進度 / Detail · 職稱 / Title<br>
+          支援編碼：UTF-8（含 BOM） · 支援引號跳脫
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">資料匯出與管理 <small>EXPORT &amp; MANAGEMENT</small></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn" onclick="exportCSV()">匯出全量 CSV</button>
+          <button class="btn" onclick="exportJSON()">備份 JSON</button>
+          <button class="btn btn-danger" onclick="resetAll()">重置所有資料</button>
+        </div>
+        <p style="color:var(--ink-3);font-size:11.5px;margin-top:14px;font-family:var(--mono);">
+          ⚠ 資料儲存於本機 localStorage，清除瀏覽器資料將遺失，建議定期備份 JSON。
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ PAGE: SETTINGS ============ -->
+    <section class="page" id="page-settings">
+      <div class="page-head">
+        <div>
+          <div class="page-title">職務設定</div>
+          <div class="page-subtitle">JOB&nbsp;DEFINITION&nbsp;·&nbsp;DEPT&nbsp;/&nbsp;ROLE&nbsp;/&nbsp;RESPONSIBILITIES</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-primary" onclick="saveSettings()">儲存設定</button>
+        </div>
+      </div>
+
+      <div class="section-title">基本資訊 <small>BASIC&nbsp;INFO</small></div>
+      <div class="form-grid cols-3">
+        <div class="field"><label>部門</label><input type="text" id="setDept" placeholder="如：人力資源部" /></div>
+        <div class="field"><label>單位</label><input type="text" id="setUnit" placeholder="如：總部 / 北區" /></div>
+        <div class="field"><label>職稱</label><input type="text" id="setTitle" placeholder="如：人力資源經理" /></div>
+        <div class="field"><label>姓名</label><input type="text" id="setName" placeholder="如：李奕勳" /></div>
+        <div class="field"><label>直屬主管</label><input type="text" id="setBoss" placeholder="如：副總經理" /></div>
+        <div class="field"><label>部屬人數</label><input type="number" id="setReports" min="0" value="0" /></div>
+        <div class="field span-3"><label>工作摘要</label><textarea id="setSummary" placeholder="負責人力資源部各項選育用留功能，因應企業發展策略擬定各項人力資源管理與發展計劃。"></textarea></div>
+      </div>
+
+      <div class="section-title">主要職責任務與規劃佔比 <small>RESPONSIBILITIES&nbsp;&amp;&nbsp;PLANNED&nbsp;%</small></div>
+      <p style="color:var(--ink-3);font-size:11.5px;margin-bottom:12px;font-family:var(--mono);">
+        每項職責對應一個工作分類。每日記錄時將依此分類進行統計。佔比合計建議 100%。
+      </p>
+      <div class="routine-list" id="routineList"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="btn" onclick="addRoutine()">＋ 新增職責項</button>
+        <span id="routineSum" style="margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--ink-3);align-self:center;"></span>
+      </div>
+
+      <div class="section-title">職位所需基本條件 <small>QUALIFICATIONS</small></div>
+      <div class="form-grid">
+        <div class="field"><label>學歷科系</label><textarea id="qualEdu" placeholder="如：人力資源、勞工關係、心理或商業管理科系，大學或碩士以上"></textarea></div>
+        <div class="field"><label>電腦技能</label><textarea id="qualIT" placeholder="如：MS Office、Power BI、HRMS"></textarea></div>
+        <div class="field"><label>語言能力</label><textarea id="qualLang" placeholder="如：國語精通、英語商務"></textarea></div>
+        <div class="field"><label>專業證照</label><textarea id="qualCert" placeholder="如：PMP、人資相關證照"></textarea></div>
+        <div class="field span-2"><label>其他技能</label><textarea id="qualOther" placeholder="如：熟悉勞動法令與人資系統"></textarea></div>
+        <div class="field span-2"><label>職位所需專業/經歷</label><textarea id="qualExp" rows="4" placeholder="◆ 至少 5 年以上相關工作經驗 ..."></textarea></div>
+        <div class="field span-2"><label>職位所需其他條件</label><textarea id="qualMisc" rows="3" placeholder="具備良好溝通能力、專案管理能力、組織領導能力 ..."></textarea></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============ CSV IMPORT MODAL ============ -->
+<div class="modal-mask" id="csvModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>匯入 CSV 工作紀錄 <small>FIELD MAPPING · PREVIEW · CONFIRM</small></h3>
+      <div class="modal-close" onclick="closeCSVModal()">×</div>
+    </div>
+    <div class="modal-body">
+      <div class="csv-summary" id="csvSummary"></div>
+
+      <div style="font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:1.5px;margin-bottom:8px;">
+        欄位對應 <span style="color:var(--gold);">FIELD MAPPING</span>
+      </div>
+      <div class="csv-mapping" id="csvMapping"></div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:1.5px;">
+          資料預覽 <span style="color:var(--gold);" id="csvPreviewCount">PREVIEW</span>
+        </div>
+        <label style="font-size:11.5px;color:var(--ink-2);display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" id="csvSkipDup" checked /> 跳過重複（同日期+分類+項目+工時）
+        </label>
+      </div>
+      <div class="csv-preview">
+        <table id="csvPreviewTable">
+          <thead><tr><th style="width:30px;">#</th><th>日期</th><th>分類</th><th>工時</th><th>工作項目</th><th>細節</th><th>狀態</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <div id="csvStats" style="font-size:11.5px;color:var(--ink-2);font-family:var(--mono);"></div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn" onclick="closeCSVModal()">取消</button>
+        <button class="btn btn-primary" id="csvConfirmBtn" onclick="confirmCSVImport()">確認匯入</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   STATE & DEFAULTS
+   ============================================================ */
+const DEFAULT_CATEGORIES = [
+  { name: "01.例行會議",   planned: 5  },
+  { name: "02.規章制度",   planned: 5  },
+  { name: "03.考勤規範",   planned: 3  },
+  { name: "04.招募甄選",   planned: 10 },
+  { name: "05.任用離退",   planned: 5  },
+  { name: "06.薪資薪酬",   planned: 5  },
+  { name: "07.勞健團保",   planned: 3  },
+  { name: "08.員工關係",   planned: 5  },
+  { name: "09.員工活動",   planned: 5  },
+  { name: "10.企業月刊",   planned: 3  },
+  { name: "11.服務中心",   planned: 5  },
+  { name: "12.雇主品牌",   planned: 2  },
+  { name: "13.組織文化",   planned: 3  },
+  { name: "14.組織發展",   planned: 10 },
+  { name: "15.教育訓練",   planned: 5  },
+  { name: "16.人才發展",   planned: 3  },
+  { name: "17.績效評核",   planned: 5  },
+  { name: "18.人資系統",   planned: 5  },
+  { name: "19.勞動法遵",   planned: 2  },
+  { name: "20.其他",       planned: 3  },
+  { name: "21.部門領導",   planned: 8  }
+];
+
+const STORE_KEY = "hr_work_log_v1";
+const DEFAULT_STATE = {
+  settings: {
+    dept: "", unit: "", title: "", name: "",
+    boss: "", reports: 0, summary: "",
+    qualEdu: "", qualIT: "", qualLang: "", qualCert: "",
+    qualOther: "", qualExp: "", qualMisc: ""
+  },
+  categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
+  entries: [],
+  plan: { start: "", hours: 40, q1: "", q2: "", q3: "", q4: "" }
+};
+
+let state = loadState();
+let charts = { today: null, week: null, compare: null };
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    const parsed = JSON.parse(raw);
+    // backward fill
+    return {
+      settings: { ...DEFAULT_STATE.settings, ...(parsed.settings || {}) },
+      categories: parsed.categories && parsed.categories.length ? parsed.categories : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
+      entries: parsed.entries || [],
+      plan: { ...DEFAULT_STATE.plan, ...(parsed.plan || {}) }
+    };
+  } catch(e) {
+    return JSON.parse(JSON.stringify(DEFAULT_STATE));
+  }
+}
+function saveState() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+function $(id) { return document.getElementById(id); }
+function fmt(n, d=1) { return Number(n||0).toFixed(d); }
+function pct(v, total) { return total > 0 ? (v / total * 100) : 0; }
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+function getWeekStart(dateStr) {
+  // ISO week: Monday start
+  const d = new Date(dateStr);
+  const day = d.getDay(); // 0 Sun .. 6 Sat
+  const diff = (day === 0 ? -6 : 1 - day);
+  d.setDate(d.getDate() + diff);
+  d.setHours(0,0,0,0);
+  return d;
+}
+function fmtDate(d) {
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+function inRange(dateStr, start, end) {
+  return dateStr >= start && dateStr <= end;
+}
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 1800);
+}
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+document.querySelectorAll(".nav-item").forEach(item => {
+  item.addEventListener("click", () => {
+    document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    item.classList.add("active");
+    const page = $("page-" + item.dataset.page);
+    page.classList.add("active");
+    if (item.dataset.page === "dashboard") refreshDashboard();
+    if (item.dataset.page === "daily") renderEntries();
+    if (item.dataset.page === "synthesis") { initSynRange(); renderSynthesis(); }
+    if (item.dataset.page === "nextweek") renderPlan();
+    if (item.dataset.page === "settings") renderSettings();
+  });
+});
+
+/* ============================================================
+   SETTINGS
+   ============================================================ */
+function renderSettings() {
+  const s = state.settings;
+  $("setDept").value = s.dept || "";
+  $("setUnit").value = s.unit || "";
+  $("setTitle").value = s.title || "";
+  $("setName").value = s.name || "";
+  $("setBoss").value = s.boss || "";
+  $("setReports").value = s.reports || 0;
+  $("setSummary").value = s.summary || "";
+  $("qualEdu").value = s.qualEdu || "";
+  $("qualIT").value = s.qualIT || "";
+  $("qualLang").value = s.qualLang || "";
+  $("qualCert").value = s.qualCert || "";
+  $("qualOther").value = s.qualOther || "";
+  $("qualExp").value = s.qualExp || "";
+  $("qualMisc").value = s.qualMisc || "";
+  renderRoutineList();
+}
+function renderRoutineList() {
+  const el = $("routineList");
+  el.innerHTML = "";
+  state.categories.forEach((c, i) => {
+    const row = document.createElement("div");
+    row.className = "routine-row";
+    row.innerHTML = `
+      <div class="idx">${String(i+1).padStart(2,"0")}</div>
+      <input type="text" value="${escapeHtml(c.name)}" oninput="updateCat(${i},'name',this.value)" placeholder="工作分類名稱" />
+      <input type="number" value="${c.planned}" step="0.5" min="0" oninput="updateCat(${i},'planned',parseFloat(this.value)||0)" placeholder="規劃 %" />
+      <input type="text" value="" placeholder="（保留）" disabled style="opacity:.4;" />
+      <span class="row-delete" onclick="deleteCat(${i})">×</span>
+    `;
+    el.appendChild(row);
+  });
+  updateRoutineSum();
+}
+function updateRoutineSum() {
+  const sum = state.categories.reduce((s,c) => s + (parseFloat(c.planned)||0), 0);
+  const ok = Math.abs(sum - 100) < 0.5;
+  $("routineSum").textContent = `合計 ${fmt(sum,1)}%` + (ok ? " ✓" : "  ⚠ 建議調整至 100%");
+  $("routineSum").style.color = ok ? "var(--jade)" : "var(--crimson)";
+}
+function updateCat(idx, key, val) {
+  state.categories[idx][key] = val;
+  updateRoutineSum();
+}
+function deleteCat(idx) {
+  if (!confirm(`確認刪除「${state.categories[idx].name}」？所屬記錄將保留但無分類佔比對照。`)) return;
+  state.categories.splice(idx,1);
+  renderRoutineList();
+}
+function addRoutine() {
+  const next = String(state.categories.length + 1).padStart(2,"0");
+  state.categories.push({ name: `${next}.新類別`, planned: 0 });
+  renderRoutineList();
+}
+function saveSettings() {
+  state.settings = {
+    dept: $("setDept").value.trim(),
+    unit: $("setUnit").value.trim(),
+    title: $("setTitle").value.trim(),
+    name: $("setName").value.trim(),
+    boss: $("setBoss").value.trim(),
+    reports: parseInt($("setReports").value) || 0,
+    summary: $("setSummary").value.trim(),
+    qualEdu: $("qualEdu").value.trim(),
+    qualIT: $("qualIT").value.trim(),
+    qualLang: $("qualLang").value.trim(),
+    qualCert: $("qualCert").value.trim(),
+    qualOther: $("qualOther").value.trim(),
+    qualExp: $("qualExp").value.trim(),
+    qualMisc: $("qualMisc").value.trim()
+  };
+  saveState();
+  refreshCategorySelects();
+  toast("設定已儲存");
+}
+
+/* ============================================================
+   ENTRIES (DAILY LOG)
+   ============================================================ */
+function refreshCategorySelects() {
+  const opts = state.categories.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join("");
+  $("ipCat").innerHTML = opts;
+  $("filterCat").innerHTML = `<option value="">全部</option>` + opts;
+}
+function addEntry() {
+  const date = $("ipDate").value;
+  const cat = $("ipCat").value;
+  const hours = parseFloat($("ipHours").value);
+  const item = $("ipItem").value.trim();
+  const detail = $("ipDetail").value.trim();
+  if (!date) { toast("請選擇日期"); return; }
+  if (!cat) { toast("請選擇分類"); return; }
+  if (!hours || hours <= 0) { toast("請輸入有效工時"); return; }
+  if (!item) { toast("請輸入工作項目"); return; }
+  state.entries.push({
+    id: uid(),
+    date, cat, hours, item, detail,
+    title: state.settings.title || ""
+  });
+  saveState();
+  $("ipHours").value = "";
+  $("ipItem").value = "";
+  $("ipDetail").value = "";
+  $("ipItem").focus();
+  renderEntries();
+  toast("已新增 1 筆");
+}
+function deleteEntry(id) {
+  if (!confirm("刪除這筆記錄？")) return;
+  state.entries = state.entries.filter(e => e.id !== id);
+  saveState();
+  renderEntries();
+}
+function renderEntries() {
+  const fd = $("filterDate").value;
+  const fc = $("filterCat").value;
+  const fk = $("filterKw").value.trim().toLowerCase();
+  let list = state.entries.slice();
+  if (fd) list = list.filter(e => e.date === fd);
+  if (fc) list = list.filter(e => e.cat === fc);
+  if (fk) list = list.filter(e => (e.item + " " + e.detail).toLowerCase().includes(fk));
+  list.sort((a,b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+
+  const tb = $("tableEntries").querySelector("tbody");
+  tb.innerHTML = "";
+  list.forEach(e => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><span class="tag">${e.date}</span></td>
+      <td>${escapeHtml(e.cat)}</td>
+      <td class="num">${fmt(e.hours,1)}</td>
+      <td>${escapeHtml(e.item)}</td>
+      <td style="color:var(--ink-3)">${escapeHtml(e.detail||"")}</td>
+      <td><span class="row-delete" onclick="deleteEntry('${e.id}')">×</span></td>
+    `;
+    tb.appendChild(tr);
+  });
+  $("entryCount").textContent = `${list.length} 筆`;
+}
+function clearFilters() {
+  $("filterDate").value = "";
+  $("filterCat").value = "";
+  $("filterKw").value = "";
+  renderEntries();
+}
+function copyYesterday() {
+  const d = new Date();
+  d.setDate(d.getDate()-1);
+  const yest = fmtDate(d);
+  const today = todayStr();
+  const yEntries = state.entries.filter(e => e.date === yest);
+  if (!yEntries.length) { toast("昨日無記錄可複製"); return; }
+  if (!confirm(`將 ${yest} 共 ${yEntries.length} 筆複製至 ${today}？`)) return;
+  yEntries.forEach(e => {
+    state.entries.push({ ...e, id: uid(), date: today });
+  });
+  saveState();
+  renderEntries();
+  toast(`已複製 ${yEntries.length} 筆至今日`);
+}
+
+/* ============================================================
+   DASHBOARD CALCULATIONS
+   ============================================================ */
+function aggregateByDate(start, end) {
+  const result = {};
+  state.categories.forEach(c => result[c.name] = 0);
+  state.entries.forEach(e => {
+    if (inRange(e.date, start, end)) {
+      result[e.cat] = (result[e.cat] || 0) + e.hours;
+    }
+  });
+  return result;
+}
+function refreshDashboard() {
+  const today = todayStr();
+  const weekStart = fmtDate(getWeekStart(today));
+  const lastWeekStart = fmtDate(new Date(getWeekStart(today).getTime() - 7*86400000));
+  const lastWeekEnd   = fmtDate(new Date(getWeekStart(today).getTime() - 1*86400000));
+  // KPI
+  const todayEntries = state.entries.filter(e => e.date === today);
+  const todayHours = todayEntries.reduce((s,e) => s + e.hours, 0);
+  const weekHours = state.entries.filter(e => e.date >= weekStart && e.date <= today).reduce((s,e) => s + e.hours, 0);
+  const lastWeekHours = state.entries.filter(e => e.date >= lastWeekStart && e.date <= lastWeekEnd).reduce((s,e) => s + e.hours, 0);
+  const totalHours = state.entries.reduce((s,e) => s + e.hours, 0);
+  const dayCount = new Set(state.entries.map(e => e.date)).size;
+  const avg = dayCount > 0 ? totalHours / dayCount : 0;
+
+  $("kpiToday").innerHTML = fmt(todayHours,1) + `<span class="unit">h</span>`;
+  $("kpiTodayItems").textContent = `${todayEntries.length} 筆 ｜ ${today}`;
+  $("kpiWeek").innerHTML = fmt(weekHours,1) + `<span class="unit">h</span>`;
+  const delta = weekHours - lastWeekHours;
+  const deltaEl = $("kpiWeekDelta");
+  deltaEl.textContent = (delta >= 0 ? "▲" : "▼") + " " + fmt(Math.abs(delta),1) + "h vs. 上週";
+  deltaEl.className = "kpi-delta " + (delta >= 0 ? "up" : "down");
+  $("kpiLastWeek").innerHTML = fmt(lastWeekHours,1) + `<span class="unit">h</span>`;
+  $("kpiLastWeekItems").textContent = `${lastWeekStart} ～ ${lastWeekEnd}`;
+  $("kpiTotal").innerHTML = fmt(totalHours,1) + `<span class="unit">h</span>`;
+  $("kpiAvg").textContent = `日均 ${fmt(avg,1)}h ｜ ${dayCount} 工作日`;
+
+  // Charts
+  renderChartToday(today);
+  renderChartWeek(weekStart, today);
+  renderChartCompare(weekStart, today, lastWeekStart, lastWeekEnd);
+  renderPlanActualTable();
+}
+
+function renderChartToday(today) {
+  const agg = aggregateByDate(today, today);
+  const labels = [], data = [];
+  Object.entries(agg).forEach(([k,v]) => { if (v > 0) { labels.push(k); data.push(v); } });
+  if (charts.today) charts.today.destroy();
+  if (!labels.length) {
+    charts.today = drawEmpty("chartToday", "今日尚無記錄");
+    return;
+  }
+  charts.today = new Chart($("chartToday"), {
+    type: "doughnut",
+    data: {
+      labels: labels,
+      datasets: [{
+        data: data,
+        backgroundColor: paletteFor(labels.length),
+        borderColor: themeVar("--bg-1"), borderWidth: 2
+      }]
+    },
+    options: doughnutOpts()
+  });
+}
+function renderChartWeek(start, end) {
+  const agg = aggregateByDate(start, end);
+  const labels = [], data = [];
+  Object.entries(agg).forEach(([k,v]) => { if (v > 0) { labels.push(k); data.push(v); } });
+  if (charts.week) charts.week.destroy();
+  if (!labels.length) {
+    charts.week = drawEmpty("chartWeek", "本週尚無記錄");
+    return;
+  }
+  charts.week = new Chart($("chartWeek"), {
+    type: "doughnut",
+    data: {
+      labels: labels,
+      datasets: [{
+        data: data,
+        backgroundColor: paletteFor(labels.length),
+        borderColor: themeVar("--bg-1"), borderWidth: 2
+      }]
+    },
+    options: doughnutOpts()
+  });
+}
+function renderChartCompare(thisStart, thisEnd, lastStart, lastEnd) {
+  const thisAgg = aggregateByDate(thisStart, thisEnd);
+  const lastAgg = aggregateByDate(lastStart, lastEnd);
+  const labels = state.categories.map(c => c.name);
+  const dThis = labels.map(l => thisAgg[l] || 0);
+  const dLast = labels.map(l => lastAgg[l] || 0);
+  // filter labels where both are 0
+  const filtered = labels.map((l,i) => ({l, t: dThis[i], lst: dLast[i]})).filter(x => x.t > 0 || x.lst > 0);
+  if (charts.compare) charts.compare.destroy();
+  if (!filtered.length) {
+    charts.compare = drawEmpty("chartCompare", "兩週皆無記錄");
+    return;
+  }
+  charts.compare = new Chart($("chartCompare"), {
+    type: "bar",
+    data: {
+      labels: filtered.map(x => x.l),
+      datasets: [
+        { label: "本週", data: filtered.map(x => x.t), backgroundColor: "rgba(200,169,106,0.85)", borderColor: "#c8a96a", borderWidth:1 },
+        { label: "上週", data: filtered.map(x => x.lst), backgroundColor: "rgba(106,143,200,0.55)", borderColor: "#6a8fc8", borderWidth:1 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: themeVar("--ink-2"), font: { family: "Noto Sans TC", size: 11 } } }
+      },
+      scales: {
+        x: { ticks: { color: themeVar("--chart-tick"), font: { size: 10 } }, grid: { color: themeVar("--chart-grid") } },
+        y: { ticks: { color: themeVar("--chart-tick"), font: { size: 10 } }, grid: { color: themeVar("--chart-grid") }, beginAtZero: true }
+      }
+    }
+  });
+}
+function themeVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+function drawEmpty(id, msg) {
+  const ctx = $(id).getContext("2d");
+  ctx.clearRect(0,0,$(id).width,$(id).height);
+  ctx.fillStyle = themeVar("--chart-tick");
+  ctx.font = "13px Noto Sans TC";
+  ctx.textAlign = "center";
+  ctx.fillText(msg, $(id).width/2, $(id).height/2);
+  return null;
+}
+function doughnutOpts() {
+  return {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: "right", labels: { color: themeVar("--ink-2"), font: { family: "Noto Sans TC", size: 10.5 }, padding: 7, boxWidth: 12 } },
+      tooltip: {
+        callbacks: {
+          label: ctx => {
+            const total = ctx.dataset.data.reduce((s,v) => s+v, 0);
+            return `${ctx.label}: ${fmt(ctx.parsed,1)}h (${fmt(pct(ctx.parsed,total),1)}%)`;
+          }
+        }
+      }
+    }
+  };
+}
+function paletteFor(n) {
+  const base = ["#c8a96a","#6a8fc8","#6ba87e","#c8584a","#a08a52","#a86ba8","#8a9a6b","#c89a6a",
+                "#6ac8a8","#c86a8a","#9aa86b","#6b8ac8","#c86ba8","#a8c86b","#8a6bc8","#6bc8c8",
+                "#c8c86b","#9a6b6b","#6b9a9a","#a86b9a","#9a9a6b"];
+  return Array(n).fill(0).map((_,i) => base[i % base.length]);
+}
+function renderPlanActualTable() {
+  const totalHours = state.entries.reduce((s,e) => s + e.hours, 0);
+  const tb = $("tablePlanActual").querySelector("tbody");
+  tb.innerHTML = "";
+  state.categories.forEach((c, i) => {
+    const catHours = state.entries.filter(e => e.cat === c.name).reduce((s,e) => s + e.hours, 0);
+    const actualPct = totalHours > 0 ? (catHours / totalHours * 100) : 0;
+    const plannedPct = parseFloat(c.planned) || 0;
+    const dev = actualPct - plannedPct;
+    let badge = `<span style="color:var(--ink-3);">— 持平</span>`;
+    let cls = "";
+    if (dev > 3) { badge = `<span style="color:var(--crimson);">過度 +${fmt(dev,1)}%</span>`; cls = "over"; }
+    else if (dev < -3) { badge = `<span style="color:var(--jade);">不足 ${fmt(dev,1)}%</span>`; cls = "under"; }
+    const maxPct = Math.max(plannedPct, actualPct, 20);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="color:var(--ink-3);font-family:var(--mono);font-size:11px;">${String(i+1).padStart(2,"0")}</td>
+      <td>${escapeHtml(c.name)}</td>
+      <td class="num pct">${fmt(plannedPct,1)}</td>
+      <td class="num pct">${fmt(actualPct,1)}</td>
+      <td class="num">${fmt(catHours,1)}</td>
+      <td>
+        <div class="pbar dual ${cls}">
+          <div class="planned" style="width:${(plannedPct/maxPct*100).toFixed(1)}%"></div>
+          <div class="actual"  style="width:${(actualPct/maxPct*100).toFixed(1)}%"></div>
+        </div>
+      </td>
+      <td>${badge}</td>
+    `;
+    tb.appendChild(tr);
+  });
+}
+function refreshAll() {
+  refreshDashboard();
+  toast("已重新計算");
+}
+
+/* ============================================================
+   NEXT WEEK PLAN
+   ============================================================ */
+function renderPlan() {
+  if (!state.plan.start) {
+    const ws = getWeekStart(todayStr());
+    ws.setDate(ws.getDate() + 7);
+    state.plan.start = fmtDate(ws);
+  }
+  $("planStart").value = state.plan.start;
+  $("planHours").value = state.plan.hours || 40;
+  $("planQ1").value = state.plan.q1 || "";
+  $("planQ2").value = state.plan.q2 || "";
+  $("planQ3").value = state.plan.q3 || "";
+  $("planQ4").value = state.plan.q4 || "";
+  recalcPlan();
+}
+function recalcPlan() {
+  const hours = parseFloat($("planHours").value) || 40;
+  const today = todayStr();
+  const weekStart = fmtDate(getWeekStart(today));
+  const tb = $("tablePlanAlloc").querySelector("tbody");
+  tb.innerHTML = "";
+  state.categories.forEach((c, i) => {
+    const plannedPct = parseFloat(c.planned) || 0;
+    const suggested = (plannedPct / 100) * hours;
+    const thisWeekActual = state.entries.filter(e => e.cat === c.name && e.date >= weekStart && e.date <= today).reduce((s,e) => s + e.hours, 0);
+    let hint = "";
+    if (thisWeekActual < suggested - 1) hint = `<span style="color:var(--jade);">本週投入不足 ${fmt(suggested - thisWeekActual,1)}h，下週宜補強</span>`;
+    else if (thisWeekActual > suggested + 1) hint = `<span style="color:var(--crimson);">本週過度投入 ${fmt(thisWeekActual - suggested,1)}h，下週宜節制</span>`;
+    else hint = `<span style="color:var(--ink-3);">投入合理</span>`;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="color:var(--ink-3);font-family:var(--mono);font-size:11px;">${String(i+1).padStart(2,"0")}</td>
+      <td>${escapeHtml(c.name)}</td>
+      <td class="num pct">${fmt(plannedPct,1)}</td>
+      <td class="num">${fmt(suggested,1)}</td>
+      <td class="num">${fmt(thisWeekActual,1)}</td>
+      <td>${hint}</td>
+    `;
+    tb.appendChild(tr);
+  });
+}
+function savePlan() {
+  state.plan = {
+    start: $("planStart").value,
+    hours: parseFloat($("planHours").value) || 40,
+    q1: $("planQ1").value,
+    q2: $("planQ2").value,
+    q3: $("planQ3").value,
+    q4: $("planQ4").value
+  };
+  saveState();
+  toast("下週計劃已儲存");
+}
+
+/* ============================================================
+   SYNTHESIS
+   ============================================================ */
+function initSynRange() {
+  if (!$("synStart").value || !$("synEnd").value) {
+    setSynRange("thisMonth");
+  }
+}
+function setSynRange(type) {
+  const d = new Date();
+  let s, e;
+  if (type === "thisMonth") {
+    s = new Date(d.getFullYear(), d.getMonth(), 1);
+    e = new Date(d.getFullYear(), d.getMonth()+1, 0);
+  } else if (type === "lastMonth") {
+    s = new Date(d.getFullYear(), d.getMonth()-1, 1);
+    e = new Date(d.getFullYear(), d.getMonth(), 0);
+  } else if (type === "quarter") {
+    const q = Math.floor(d.getMonth()/3);
+    s = new Date(d.getFullYear(), q*3, 1);
+    e = new Date(d.getFullYear(), q*3+3, 0);
+  } else {
+    // all
+    if (!state.entries.length) { s = d; e = d; }
+    else {
+      const sorted = state.entries.map(x => x.date).sort();
+      s = new Date(sorted[0]); e = new Date(sorted[sorted.length-1]);
+    }
+  }
+  $("synStart").value = fmtDate(s);
+  $("synEnd").value = fmtDate(e);
+  renderSynthesis();
+}
+function renderSynthesis() {
+  const s = $("synStart").value, e = $("synEnd").value;
+  if (!s || !e) return;
+  const list = state.entries.filter(x => x.date >= s && x.date <= e);
+  const total = list.reduce((a,x) => a + x.hours, 0);
+  const days = new Set(list.map(x => x.date)).size;
+  const avg = days > 0 ? total / days : 0;
+  // category aggregation
+  const catMap = {};
+  list.forEach(x => { catMap[x.cat] = (catMap[x.cat] || 0) + x.hours; });
+  const usedCats = Object.keys(catMap).length;
+
+  $("synTotal").innerHTML = fmt(total,1) + `<span class="unit">h</span>`;
+  $("synDays").innerHTML = days + `<span class="unit">天</span>`;
+  $("synAvg").innerHTML = fmt(avg,1) + `<span class="unit">h</span>`;
+  $("synCats").innerHTML = usedCats + `<span class="unit">類</span>`;
+
+  // table cat breakdown
+  const tb = $("tableSynCat").querySelector("tbody");
+  tb.innerHTML = "";
+  const maxV = Math.max(1, ...Object.values(catMap));
+  state.categories.forEach((c, i) => {
+    const v = catMap[c.name] || 0;
+    if (v === 0) return;
+    const p = total > 0 ? v / total * 100 : 0;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="color:var(--ink-3);font-family:var(--mono);font-size:11px;">${String(i+1).padStart(2,"0")}</td>
+      <td>${escapeHtml(c.name)}</td>
+      <td class="num">${fmt(v,1)}</td>
+      <td class="num pct">${fmt(p,2)}%</td>
+      <td><div class="pbar"><span style="width:${(v/maxV*100).toFixed(1)}%"></span></div></td>
+    `;
+    tb.appendChild(tr);
+  });
+  // sort: highest first
+  const rows = Array.from(tb.querySelectorAll("tr"));
+  rows.sort((a,b) => parseFloat(b.children[2].textContent) - parseFloat(a.children[2].textContent));
+  rows.forEach(r => tb.appendChild(r));
+
+  // AI candidate: fuzzy group by item name (lowercase trimmed)
+  const groups = {};
+  list.forEach(x => {
+    const key = (x.item || "").trim();
+    if (!key) return;
+    // fuzzy: ignore digits at start (1./2./3.)
+    const norm = key.replace(/^\d+\.?\s*/, "").trim();
+    if (!groups[norm]) groups[norm] = { item: norm, count: 0, hours: 0, cats: {} };
+    groups[norm].count += 1;
+    groups[norm].hours += x.hours;
+    groups[norm].cats[x.cat] = (groups[norm].cats[x.cat] || 0) + 1;
+  });
+  const aiList = Object.values(groups).filter(g => g.count >= 3)
+    .sort((a,b) => b.count - a.count || b.hours - a.hours)
+    .slice(0, 50);
+
+  const tb2 = $("tableAICandidates").querySelector("tbody");
+  tb2.innerHTML = "";
+  if (!aiList.length) {
+    tb2.innerHTML = `<tr><td colspan="6" style="color:var(--ink-3);text-align:center;padding:24px;">尚無重複 3 次以上之項目</td></tr>`;
+  } else {
+    aiList.forEach((g, i) => {
+      const mainCat = Object.entries(g.cats).sort((a,b) => b[1]-a[1])[0][0];
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td style="color:var(--ink-3);font-family:var(--mono);font-size:11px;">${String(i+1).padStart(2,"0")}</td>
+        <td>${escapeHtml(g.item)}</td>
+        <td><span class="tag">${escapeHtml(mainCat)}</span></td>
+        <td class="num">${g.count}</td>
+        <td class="num">${fmt(g.hours,1)}</td>
+        <td class="num">${fmt(g.hours/g.count,2)}</td>
+      `;
+      tb2.appendChild(tr);
+    });
+  }
+}
+
+/* ============================================================
+   EXPORT
+   ============================================================ */
+function exportCSV() {
+  const rows = [["日期","職稱","工作分類","工時","工作項目","執行進度與細節"]];
+  state.entries.slice().sort((a,b) => a.date.localeCompare(b.date)).forEach(e => {
+    rows.push([e.date, e.title || state.settings.title, e.cat, e.hours, e.item, e.detail || ""]);
+  });
+  const csv = "\uFEFF" + rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+  download(csv, `work_log_${todayStr()}.csv`, "text/csv;charset=utf-8");
+  toast("CSV 已下載");
+}
+function exportJSON() {
+  const data = JSON.stringify(state, null, 2);
+  download(data, `work_log_backup_${todayStr()}.json`, "application/json");
+  toast("JSON 備份已下載");
+}
+function importJSON(ev) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.entries || !data.settings) throw new Error("檔案格式錯誤");
+      if (!confirm(`將還原 ${data.entries.length} 筆工作記錄，目前資料將被覆寫，確認嗎？`)) return;
+      state = {
+        settings: { ...DEFAULT_STATE.settings, ...(data.settings || {}) },
+        categories: data.categories && data.categories.length ? data.categories : JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
+        entries: data.entries || [],
+        plan: { ...DEFAULT_STATE.plan, ...(data.plan || {}) }
+      };
+      saveState();
+      bootstrap();
+      toast("資料還原成功");
+    } catch(err) {
+      alert("還原失敗：" + err.message);
+    }
+  };
+  r.readAsText(file);
+  ev.target.value = "";
+}
+function resetAll() {
+  if (!confirm("確認重置所有資料？此操作不可復原，建議先匯出 JSON 備份。")) return;
+  if (!confirm("再次確認：將刪除所有設定、記錄與計劃。")) return;
+  localStorage.removeItem(STORE_KEY);
+  state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  saveState();
+  bootstrap();
+  toast("已重置");
+}
+function download(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+function exportSummary(scope) {
+  const today = todayStr();
+  let s, e, title;
+  if (scope === "week") {
+    s = fmtDate(getWeekStart(today)); e = today;
+    title = `本週工作摘要報告（${s} ～ ${e}）`;
+  } else if (scope === "lastWeek") {
+    const ws = getWeekStart(today);
+    s = fmtDate(new Date(ws.getTime() - 7*86400000));
+    e = fmtDate(new Date(ws.getTime() - 1*86400000));
+    title = `上週工作摘要報告（${s} ～ ${e}）`;
+  } else if (scope === "month") {
+    const d = new Date();
+    s = fmtDate(new Date(d.getFullYear(), d.getMonth(), 1));
+    e = fmtDate(new Date(d.getFullYear(), d.getMonth()+1, 0));
+    title = `本月工作摘要報告（${s} ～ ${e}）`;
+  } else {
+    s = prompt("起始日期 (YYYY-MM-DD)：", $("synStart").value || today);
+    if (!s) return;
+    e = prompt("結束日期 (YYYY-MM-DD)：", $("synEnd").value || today);
+    if (!e) return;
+    title = `工作摘要報告（${s} ～ ${e}）`;
+  }
+  const html = buildSummaryHTML(title, s, e);
+  openReportWindow(html, title);
+}
+function buildSummaryHTML(title, s, e) {
+  const list = state.entries.filter(x => x.date >= s && x.date <= e)
+    .sort((a,b) => a.date.localeCompare(b.date));
+  const total = list.reduce((a,x) => a + x.hours, 0);
+  const days = new Set(list.map(x => x.date)).size;
+  const avg = days > 0 ? total / days : 0;
+  const catMap = {};
+  list.forEach(x => { catMap[x.cat] = (catMap[x.cat] || 0) + x.hours; });
+
+  const overallTotal = state.entries.reduce((a,x) => a + x.hours, 0);
+  const catRows = state.categories.map((c, i) => {
+    const v = catMap[c.name] || 0;
+    if (v === 0) return "";
+    const periodPct = total > 0 ? v / total * 100 : 0;
+    const planned = parseFloat(c.planned) || 0;
+    const dev = periodPct - planned;
+    return `<tr>
+      <td style="text-align:center;">${i+1}</td>
+      <td>${escapeHtml(c.name)}</td>
+      <td style="text-align:right;">${fmt(planned,1)}%</td>
+      <td style="text-align:right;">${fmt(periodPct,1)}%</td>
+      <td style="text-align:right;">${fmt(v,1)}</td>
+      <td style="text-align:right;color:${Math.abs(dev)<3?'#666':(dev>0?'#c8584a':'#6ba87e')};">${dev>=0?'+':''}${fmt(dev,1)}%</td>
+    </tr>`;
+  }).join("");
+
+  const itemRows = list.map(x => `<tr>
+    <td>${x.date}</td>
+    <td>${escapeHtml(x.cat)}</td>
+    <td style="text-align:right;">${fmt(x.hours,1)}</td>
+    <td>${escapeHtml(x.item)}</td>
+    <td>${escapeHtml(x.detail||"")}</td>
+  </tr>`).join("");
+
+  const planSection = (scope_is_week_or_month(s,e)) ? `
+    <h2>下週工作計劃</h2>
+    <p><strong>下週起始：</strong>${state.plan.start || "—"} ｜ <strong>預計工時：</strong>${state.plan.hours || 40}h</p>
+    <table class="matrix-print">
+      <tr>
+        <td><strong>重要 / 緊急（Do First）</strong><br/>${escapeHtml(state.plan.q1||"—").replace(/\n/g,"<br>")}</td>
+        <td><strong>重要 / 不緊急（Schedule）</strong><br/>${escapeHtml(state.plan.q2||"—").replace(/\n/g,"<br>")}</td>
+      </tr>
+      <tr>
+        <td><strong>不重要 / 緊急（Delegate）</strong><br/>${escapeHtml(state.plan.q3||"—").replace(/\n/g,"<br>")}</td>
+        <td><strong>不重要 / 不緊急（Eliminate）</strong><br/>${escapeHtml(state.plan.q4||"—").replace(/\n/g,"<br>")}</td>
+      </tr>
+    </table>` : "";
+
+  return reportTemplate(title, `
+    <div class="meta">
+      <p><strong>姓名：</strong>${escapeHtml(state.settings.name||"—")} ｜
+         <strong>職稱：</strong>${escapeHtml(state.settings.title||"—")} ｜
+         <strong>部門：</strong>${escapeHtml(state.settings.dept||"—")}</p>
+      <p><strong>期間：</strong>${s} ～ ${e}</p>
+    </div>
+
+    <h2>關鍵指標</h2>
+    <table class="kpi-print">
+      <tr>
+        <td><div class="lbl">期間總工時</div><div class="val">${fmt(total,1)} h</div></td>
+        <td><div class="lbl">工作天數</div><div class="val">${days} 天</div></td>
+        <td><div class="lbl">日均工時</div><div class="val">${fmt(avg,1)} h</div></td>
+        <td><div class="lbl">分類項數</div><div class="val">${Object.keys(catMap).length} 類</div></td>
+      </tr>
+    </table>
+
+    <h2>分類統計與規劃對照</h2>
+    <table>
+      <thead><tr><th>#</th><th>工作類別</th><th>規劃%</th><th>實際%</th><th>累計h</th><th>偏差</th></tr></thead>
+      <tbody>${catRows || `<tr><td colspan="6" style="text-align:center;color:#999;">期間無記錄</td></tr>`}</tbody>
+    </table>
+
+    <h2>工作明細</h2>
+    <table>
+      <thead><tr><th>日期</th><th>分類</th><th>工時</th><th>工作項目</th><th>執行進度</th></tr></thead>
+      <tbody>${itemRows || `<tr><td colspan="5" style="text-align:center;color:#999;">期間無記錄</td></tr>`}</tbody>
+    </table>
+
+    ${planSection}
+  `);
+}
+function scope_is_week_or_month(s,e) {
+  // include plan if range is recent
+  return true;
+}
+function exportJD() {
+  const title = `${state.settings.title||"職位"} ｜ 職能說明書`;
+  const overall = state.entries.reduce((a,x) => a + x.hours, 0);
+  const days = new Set(state.entries.map(x => x.date)).size;
+  const start = state.entries.length ? state.entries.map(x => x.date).sort()[0] : "—";
+  const end = state.entries.length ? state.entries.map(x => x.date).sort().slice(-1)[0] : "—";
+  const catRows = state.categories.map((c, i) => {
+    const v = state.entries.filter(e => e.cat === c.name).reduce((s,e) => s + e.hours, 0);
+    const p = overall > 0 ? v / overall * 100 : 0;
+    return `<tr>
+      <td style="text-align:center;">${i+1}</td>
+      <td>${escapeHtml(c.name)}</td>
+      <td style="text-align:right;">${fmt(c.planned||0,1)}%</td>
+      <td style="text-align:right;">${fmt(v,1)}</td>
+      <td style="text-align:right;">${fmt(p,2)}%</td>
+    </tr>`;
+  }).join("");
+
+  const html = reportTemplate(title, `
+    <table class="jd-head">
+      <tr>
+        <td class="lbl">部門職稱</td><td>${escapeHtml(state.settings.dept||"—")}</td>
+        <td class="lbl">職務名稱</td><td>${escapeHtml(state.settings.title||"—")}</td>
+      </tr>
+      <tr>
+        <td class="lbl">直屬主管</td><td>${escapeHtml(state.settings.boss||"—")}</td>
+        <td class="lbl">部屬人數</td><td>${state.settings.reports||0}</td>
+      </tr>
+    </table>
+
+    <h2>工作摘要</h2>
+    <p>${escapeHtml(state.settings.summary||"—").replace(/\n/g,"<br>")}</p>
+
+    <h2>主要職責任務與工作總佔比</h2>
+    <table>
+      <thead><tr>
+        <th>#</th><th>工作類別</th>
+        <th style="text-align:right;">規劃佔比</th>
+        <th style="text-align:right;">統計工時</th>
+        <th style="text-align:right;">目前佔比</th>
+      </tr></thead>
+      <tbody>${catRows}</tbody>
+      <tfoot><tr style="font-weight:600;background:#f4f4f4;">
+        <td colspan="3" style="text-align:right;">統計</td>
+        <td style="text-align:right;">${fmt(overall,1)} h</td>
+        <td style="text-align:right;">100.00%</td>
+      </tr></tfoot>
+    </table>
+    <p style="font-size:11px;color:#888;">統計區間：${start} ～ ${end} ｜ 共 ${days} 工作日 ｜ 日均 ${fmt(days>0?overall/days:0,2)} h</p>
+
+    <h2>職位所需基本條件</h2>
+    <table class="jd-cond">
+      <tr><td class="lbl" style="width:120px;">學歷科系</td><td>${escapeHtml(state.settings.qualEdu||"—")}</td>
+          <td class="lbl" style="width:120px;">電腦技能</td><td>${escapeHtml(state.settings.qualIT||"—")}</td></tr>
+      <tr><td class="lbl">語言能力</td><td>${escapeHtml(state.settings.qualLang||"—")}</td>
+          <td class="lbl">專業證照</td><td>${escapeHtml(state.settings.qualCert||"—")}</td></tr>
+      <tr><td class="lbl">其他技能</td><td colspan="3">${escapeHtml(state.settings.qualOther||"—")}</td></tr>
+    </table>
+
+    <h2>職位所需專業 / 經歷</h2>
+    <p>${escapeHtml(state.settings.qualExp||"—").replace(/\n/g,"<br>")}</p>
+
+    <h2>職位所需其他條件</h2>
+    <p>${escapeHtml(state.settings.qualMisc||"—").replace(/\n/g,"<br>")}</p>
+  `);
+  openReportWindow(html, title);
+}
+function exportJDPrint() {
+  exportJD();
+  setTimeout(() => { /* user can hit print in new window */ }, 200);
+}
+function reportTemplate(title, body) {
+  return `<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title>
+<style>
+  body { font-family: "Noto Serif TC", "Microsoft JhengHei", serif; color: #1a1a1a; max-width: 820px; margin: 30px auto; padding: 0 30px; line-height: 1.7; font-size: 13px;}
+  h1 { font-size: 24px; border-bottom: 3px double #1a1a1a; padding-bottom: 12px; letter-spacing: 2px; }
+  h2 { font-size: 16px; margin-top: 28px; padding-left: 10px; border-left: 4px solid #c8a96a; letter-spacing: 1px;}
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 20px; font-size: 12px; }
+  th, td { border: 1px solid #d4d4d4; padding: 7px 9px; }
+  th { background: #f4f0e6; color: #5a4a25; font-weight: 600; letter-spacing: 1px; }
+  table.kpi-print td { width: 25%; text-align: center; padding: 16px; }
+  table.kpi-print .lbl { font-size: 10px; letter-spacing: 2px; color: #888; margin-bottom: 6px; font-family: monospace;}
+  table.kpi-print .val { font-size: 22px; color: #5a4a25; font-weight: 600; }
+  table.jd-head td.lbl, table.jd-cond td.lbl { background: #f4f0e6; font-weight: 600; width: 100px; }
+  table.matrix-print td { width: 50%; vertical-align: top; padding: 14px; }
+  .meta p { margin: 4px 0; color: #444; }
+  @media print { body { margin: 0; padding: 15mm; } .no-print { display: none; }
+    h1, h2 { page-break-after: avoid; } tr { page-break-inside: avoid; }}
+  .toolbar { position: sticky; top: 0; background: #fff; padding: 10px 0; border-bottom: 1px solid #ddd; margin-bottom: 20px; }
+  .toolbar button { background: #c8a96a; color: white; border: none; padding: 8px 18px; cursor: pointer; font-size: 13px; letter-spacing: 1px;}
+  .toolbar button:hover { background: #a08a52;}
+</style></head><body>
+<div class="toolbar no-print">
+  <button onclick="window.print()">🖨 列印 / 另存 PDF</button>
+  <button onclick="window.close()" style="background:#888;margin-left:8px;">關閉</button>
+</div>
+<h1>${escapeHtml(title)}</h1>
+${body}
+<p style="text-align:right;color:#aaa;font-size:10px;margin-top:30px;">由 HR 戰情室 自動生成 · ${new Date().toLocaleString("zh-TW")}</p>
+</body></html>`;
+}
+function openReportWindow(html, title) {
+  const w = window.open("", "_blank");
+  if (!w) { alert("瀏覽器封鎖了彈出視窗，請允許後再試。"); return; }
+  w.document.write(html);
+  w.document.close();
+}
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function escapeHtml(s) {
+  if (s === null || s === undefined) return "";
+  return String(s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+
+/* ============================================================
+   THEME SWITCHER
+   ============================================================ */
+const THEME_KEY = "hr_work_log_theme";
+function setTheme(name) {
+  document.documentElement.setAttribute("data-theme", name);
+  localStorage.setItem(THEME_KEY, name);
+  document.querySelectorAll(".theme-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.theme === name);
+  });
+  // Redraw charts with new theme colors
+  refreshDashboard();
+}
+function loadTheme() {
+  const saved = localStorage.getItem(THEME_KEY) || "obsidian";
+  setTheme(saved);
+}
+
+/* ============================================================
+   CSV IMPORT
+   ============================================================ */
+let csvParsed = null; // { headers, rows, mapping, normalized }
+
+// Robust CSV parser handling quotes, commas inside quotes, CRLF
+function parseCSV(text) {
+  // strip BOM
+  if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  const rows = [];
+  let row = [], field = "", inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i], next = text[i+1];
+    if (inQuotes) {
+      if (ch === '"' && next === '"') { field += '"'; i++; }
+      else if (ch === '"') { inQuotes = false; }
+      else { field += ch; }
+    } else {
+      if (ch === '"') { inQuotes = true; }
+      else if (ch === ',') { row.push(field); field = ""; }
+      else if (ch === '\r') { /* ignore */ }
+      else if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ""; }
+      else { field += ch; }
+    }
+  }
+  if (field !== "" || row.length) { row.push(field); rows.push(row); }
+  return rows.filter(r => r.some(c => c.trim() !== ""));
+}
+
+// Field synonyms for auto-mapping (lowercase)
+const FIELD_SYNONYMS = {
+  date:   ["日期","date","年月日","datetime","datestamp","time","記錄日期","紀錄日期"],
+  cat:    ["工作分類","分類","類別","category","cat","type","work type","工作類別","work category"],
+  hours:  ["工時","hours","hour","時數","小時","duration","花費時數","耗時"],
+  item:   ["工作項目","項目","item","task","工作內容","work item","subject","title of task"],
+  detail: ["執行進度與細節","執行進度","細節","detail","progress","note","notes","備註","remark","remarks","status"],
+  title:  ["職稱","title","job title","position","role"]
+};
+
+function detectFieldMapping(headers) {
+  const map = {};
+  headers.forEach((h, idx) => {
+    const norm = String(h).toLowerCase().trim().replace(/^\d+\.?\s*/, "");
+    for (const field in FIELD_SYNONYMS) {
+      if (map[field] !== undefined) continue;
+      if (FIELD_SYNONYMS[field].some(s => norm === s.toLowerCase() || norm.includes(s.toLowerCase()))) {
+        map[field] = idx;
+        break;
+      }
+    }
+  });
+  return map;
+}
+
+// Normalize date string to YYYY-MM-DD
+function normalizeDate(s) {
+  if (!s) return null;
+  s = String(s).trim();
+  // Already YYYY-MM-DD or YYYY/MM/DD
+  let m = s.match(/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})/);
+  if (m) {
+    return `${m[1]}-${String(m[2]).padStart(2,"0")}-${String(m[3]).padStart(2,"0")}`;
+  }
+  // MM/DD/YYYY
+  m = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})/);
+  if (m) {
+    return `${m[3]}-${String(m[1]).padStart(2,"0")}-${String(m[2]).padStart(2,"0")}`;
+  }
+  // Excel serial date number
+  if (/^\d+(\.\d+)?$/.test(s)) {
+    const n = parseFloat(s);
+    if (n > 25569 && n < 60000) { // reasonable Excel date range
+      const d = new Date((n - 25569) * 86400000);
+      return fmtDate(d);
+    }
+  }
+  // Try Date parse
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) return fmtDate(d);
+  return null;
+}
+
+// Best-effort category resolution
+function resolveCategory(raw) {
+  if (!raw) return null;
+  const s = String(raw).trim();
+  // exact match
+  const exact = state.categories.find(c => c.name === s);
+  if (exact) return { name: exact.name, isNew: false, matched: "exact" };
+  // strip leading number prefix and try again on both sides
+  const stripped = s.replace(/^\d+\.?\s*/, "").trim();
+  const strippedCat = state.categories.find(c => c.name.replace(/^\d+\.?\s*/, "").trim() === stripped);
+  if (strippedCat) return { name: strippedCat.name, isNew: false, matched: "fuzzy" };
+  // contains match
+  const contains = state.categories.find(c =>
+    c.name.includes(stripped) || stripped.includes(c.name.replace(/^\d+\.?\s*/, "").trim())
+  );
+  if (contains) return { name: contains.name, isNew: false, matched: "contains" };
+  return { name: s, isNew: true, matched: "new" };
+}
+
+function onCSVSelected(ev) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const rows = parseCSV(e.target.result);
+      if (rows.length < 2) { alert("CSV 內容過少或格式錯誤"); return; }
+      const headers = rows[0];
+      const body = rows.slice(1);
+      const mapping = detectFieldMapping(headers);
+      csvParsed = { headers, rows: body, mapping };
+      openCSVModal();
+    } catch(err) {
+      alert("CSV 解析失敗：" + err.message);
+    }
+  };
+  reader.readAsText(file, "UTF-8");
+  ev.target.value = "";
+}
+
+function openCSVModal() {
+  $("csvModal").classList.add("show");
+  renderCSVMapping();
+  renderCSVPreview();
+}
+function closeCSVModal() {
+  $("csvModal").classList.remove("show");
+  csvParsed = null;
+}
+
+function renderCSVMapping() {
+  const fields = [
+    { key: "date",   label: "日期",     required: true  },
+    { key: "cat",    label: "工作分類", required: true  },
+    { key: "hours",  label: "工時",     required: true  },
+    { key: "item",   label: "工作項目", required: true  },
+    { key: "detail", label: "執行進度", required: false },
+    { key: "title",  label: "職稱",     required: false }
+  ];
+  const html = fields.map(f => {
+    const sel = csvParsed.mapping[f.key];
+    const opts = ['<option value="-1">— 不對應 —</option>']
+      .concat(csvParsed.headers.map((h,i) => `<option value="${i}" ${sel===i?"selected":""}>${escapeHtml(h)}</option>`))
+      .join("");
+    return `<div class="field">
+      <label>${f.label}${f.required ? ' <span style="color:var(--crimson)">*</span>' : ''}</label>
+      <select onchange="updateMapping('${f.key}', this.value)">${opts}</select>
+    </div>`;
+  }).join("");
+  $("csvMapping").innerHTML = html;
+}
+function updateMapping(key, val) {
+  const v = parseInt(val);
+  if (v < 0) delete csvParsed.mapping[key];
+  else csvParsed.mapping[key] = v;
+  renderCSVPreview();
+}
+
+function renderCSVPreview() {
+  const map = csvParsed.mapping;
+  const required = ["date","cat","hours","item"];
+  const missing = required.filter(k => map[k] === undefined);
+
+  // build normalized rows
+  const normalized = csvParsed.rows.map((row, idx) => {
+    const get = k => map[k] !== undefined ? (row[map[k]] || "") : "";
+    const dateRaw = get("date");
+    const date = normalizeDate(dateRaw);
+    const hoursRaw = get("hours");
+    const hours = parseFloat(String(hoursRaw).replace(/[^\d\.\-]/g, ""));
+    const catRaw = get("cat");
+    const catResolved = catRaw ? resolveCategory(catRaw) : null;
+    const item = String(get("item")).trim();
+    const detail = String(get("detail")).trim();
+    const title = String(get("title")).trim();
+
+    const errs = [];
+    if (!date) errs.push("日期無效");
+    if (!catResolved) errs.push("缺分類");
+    if (isNaN(hours) || hours <= 0) errs.push("工時無效");
+    if (!item) errs.push("缺項目");
+
+    return {
+      idx, raw: row,
+      date, cat: catResolved ? catResolved.name : catRaw,
+      catNew: catResolved ? catResolved.isNew : false,
+      catMatch: catResolved ? catResolved.matched : null,
+      hours: isNaN(hours) ? 0 : hours,
+      item, detail, title,
+      errs
+    };
+  });
+  csvParsed.normalized = normalized;
+
+  // duplicate detection
+  const skipDup = $("csvSkipDup").checked;
+  const existingKeys = new Set(state.entries.map(e => `${e.date}|${e.cat}|${e.item}|${e.hours}`));
+  let validCount = 0, errCount = 0, dupCount = 0, newCatCount = 0;
+  const newCats = new Set();
+
+  normalized.forEach(n => {
+    if (n.errs.length) { errCount++; n._skip = true; n._reason = n.errs.join("、"); return; }
+    const key = `${n.date}|${n.cat}|${n.item}|${n.hours}`;
+    if (skipDup && existingKeys.has(key)) { dupCount++; n._skip = true; n._reason = "重複"; return; }
+    if (n.catNew) { newCatCount++; newCats.add(n.cat); }
+    validCount++;
+    n._skip = false;
+  });
+
+  // summary
+  $("csvSummary").innerHTML = `
+    <strong>檔案讀取：</strong>共 ${normalized.length} 筆資料｜
+    <strong style="color:var(--jade);">${validCount}</strong> 筆可匯入 ·
+    <strong style="color:var(--crimson);">${errCount}</strong> 筆格式錯誤 ·
+    <strong style="color:var(--ink-3);">${dupCount}</strong> 筆重複略過
+    ${missing.length ? `<br><span class="csv-warn">⚠ 必要欄位未對應：${missing.join("、")}</span>` : `<br><span class="csv-ok">✓ 必要欄位已對應</span>`}
+    ${newCatCount > 0 ? `<br><span class="csv-warn">⚠ 偵測到 ${newCats.size} 個新分類，將於匯入時自動建立：${[...newCats].slice(0,5).join("、")}${newCats.size>5?" …":""}</span>` : ""}
+  `;
+  $("csvPreviewCount").textContent = `共 ${normalized.length} 筆 · 顯示前 30 筆`;
+  $("csvStats").textContent = `可匯入 ${validCount} 筆`;
+  $("csvConfirmBtn").disabled = validCount === 0 || missing.length > 0;
+  $("csvConfirmBtn").style.opacity = $("csvConfirmBtn").disabled ? 0.4 : 1;
+
+  // preview rows
+  const tb = $("csvPreviewTable").querySelector("tbody");
+  tb.innerHTML = "";
+  normalized.slice(0, 30).forEach((n, i) => {
+    const tr = document.createElement("tr");
+    if (n._skip) tr.classList.add("csv-row-skip");
+    let status = "";
+    if (n.errs.length) status = `<span class="csv-warn">${n.errs.join("、")}</span>`;
+    else if (n._reason === "重複") status = `<span style="color:var(--ink-3);">重複略過</span>`;
+    else if (n.catNew) status = `<span style="color:var(--gold);">新分類 ✦</span>`;
+    else if (n.catMatch === "fuzzy" || n.catMatch === "contains") status = `<span style="color:var(--azure);">模糊比對</span>`;
+    else status = `<span class="csv-ok">✓</span>`;
+    tr.innerHTML = `
+      <td style="color:var(--ink-3);font-family:var(--mono);font-size:10px;">${i+1}</td>
+      <td>${escapeHtml(n.date || (n.raw[map.date]||"") + " ?")}</td>
+      <td>${escapeHtml(n.cat)}</td>
+      <td class="num">${fmt(n.hours,1)}</td>
+      <td>${escapeHtml(n.item)}</td>
+      <td style="color:var(--ink-3);">${escapeHtml(n.detail)}</td>
+      <td>${status}</td>
+    `;
+    tb.appendChild(tr);
+  });
+}
+
+function confirmCSVImport() {
+  if (!csvParsed || !csvParsed.normalized) return;
+  const toImport = csvParsed.normalized.filter(n => !n._skip);
+  if (!toImport.length) { toast("無可匯入資料"); return; }
+
+  // create new categories first
+  const newCats = new Set();
+  toImport.forEach(n => { if (n.catNew) newCats.add(n.cat); });
+  newCats.forEach(name => {
+    if (!state.categories.find(c => c.name === name)) {
+      state.categories.push({ name, planned: 0 });
+    }
+  });
+
+  // insert entries
+  toImport.forEach(n => {
+    state.entries.push({
+      id: uid(),
+      date: n.date,
+      cat: n.cat,
+      hours: n.hours,
+      item: n.item,
+      detail: n.detail,
+      title: n.title || state.settings.title || ""
+    });
+  });
+
+  saveState();
+  refreshCategorySelects();
+  renderEntries();
+  refreshDashboard();
+  closeCSVModal();
+  toast(`成功匯入 ${toImport.length} 筆${newCats.size?` ｜新增分類 ${newCats.size} 個`:""}`);
+}
+
+function downloadCSVTemplate() {
+  const sample = [
+    ["日期","職稱","工作分類","工時","工作項目","執行進度與細節"],
+    ["2026-05-15","人資經理","01.例行會議","1.5","部門週會前置","議程定稿"],
+    ["2026-05-15","人資經理","04.招募甄選","2.0","HRBP 候選人複試","已發出 offer"],
+    ["2026-05-16","人資經理","18.人資系統","3.0","Mayo HRMS 設定","完成考勤模組"]
+  ];
+  const csv = "\uFEFF" + sample.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(",")).join("\n");
+  download(csv, "work_log_template.csv", "text/csv;charset=utf-8");
+  toast("CSV 範本已下載");
+}
+
+/* ============================================================
+   BOOTSTRAP
+   ============================================================ */
+function bootstrap() {
+  // theme
+  loadTheme();
+  // today info
+  const now = new Date();
+  $("todayInfo").textContent = now.toLocaleDateString("zh-TW", { weekday: "short", year: "numeric", month: "2-digit", day: "2-digit" });
+
+  // default values
+  $("ipDate").value = todayStr();
+
+  refreshCategorySelects();
+  renderSettings();
+  renderEntries();
+  refreshDashboard();
+  renderPlan();
+  initSynRange();
+  renderSynthesis();
+}
+bootstrap();
+
+// keyboard shortcut: Enter on item input → add entry
+$("ipItem").addEventListener("keydown", e => {
+  if (e.key === "Enter") { e.preventDefault(); addEntry(); }
+});
+$("ipDetail").addEventListener("keydown", e => {
+  if (e.key === "Enter") { e.preventDefault(); addEntry(); }
+});
+$("ipHours").addEventListener("keydown", e => {
+  if (e.key === "Enter") { e.preventDefault(); $("ipItem").focus(); }
+});
+</script>
+</body>
+</html>
